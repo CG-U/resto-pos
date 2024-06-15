@@ -2,7 +2,6 @@ import "./App.css";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, get, child } from "firebase/database";
 import { useState, useEffect } from "react";
-import { FoodEntry } from "./organism/components";
 import {
   BrowserRouter,
   Route,
@@ -10,7 +9,7 @@ import {
   Link,
   useLocation,
 } from "react-router-dom";
-import { AddToInventory, Order } from "./pages/components";
+import { AddToInventory, CreateFood, Order } from "./pages/components";
 
 const firebaseConfig = {
   // ...
@@ -24,50 +23,35 @@ export type Size = "" | "small" | "regular" | "large";
 export type Food = {
   category: Category;
   name: string;
-  size?: Size;
   price: number;
   stock: number;
 };
+
+export const categories: Category[] = ["burgers", "desert", "drink", "sides"];
 
 const app = initializeApp(firebaseConfig);
 
 export const database = getDatabase(app);
 
 function App() {
-  const [menu, setMenu] = useState<{ [itemName: string]: Food } | null>(null);
+  const [menu, setMenu] = useState<Food[]>();
   const [location, setLocation] = useState(window.location.pathname);
-
-  const sampleFood: Food = {
-    category: "burgers",
-    name: "Double Cheese Burger",
-    price: 350,
-    size: "",
-    stock: 100,
-  };
 
   useEffect(() => {
     getMenu();
   }, []);
-
-  function addFoodToMenu(food: Food) {
-    set(ref(database, "menu/" + food.name), {
-      category: food.category,
-      name: food.name,
-      size: food.size,
-      price: food.price,
-      stock: food.stock,
-    }).then(() => {
-      getMenu();
-    });
-  }
 
   function getMenu() {
     const dbReference = ref(getDatabase());
     get(child(dbReference, "menu"))
       .then((snapshot) => {
         if (snapshot.exists()) {
-          console.log(snapshot.val());
-          setMenu(snapshot.val());
+          const menuData = snapshot.val();
+          const menuArray = Object.keys(menuData).map((itemName) => ({
+            ...menuData[itemName],
+            name: itemName,
+          }));
+          setMenu(menuArray);
         } else {
           console.log("No data available");
         }
@@ -81,7 +65,7 @@ function App() {
     <BrowserRouter>
       <div className="flex flex-col h-screen bg-base-300">
         <nav className="flex justify-between navbar bg-base-100">
-          <Link to={"/"} className="text-2xl font-black">
+          <Link to={"/order"} className="text-2xl font-black">
             Burger Garage POS
           </Link>
           <ul className="flex space-x-4">
@@ -121,24 +105,21 @@ function App() {
             </Link>
           </ul>
         </nav>
-        <div className="flex-1">
+        <div className="flex-1 h-full p-4 overflow-y-auto ">
           <Routes>
-            <Route path="/inventory" element={<AddToInventory />} />
-            <Route path="/order" element={<Order />} />
+            <Route path="/inventory">
+              <Route path="" element={<AddToInventory />} />
+              <Route
+                path="create-food"
+                element={<CreateFood getMenu={getMenu} />}
+              />
+            </Route>
+            <Route
+              path="/order"
+              element={<Order menu={menu} getMenu={getMenu} />}
+            />
           </Routes>
         </div>
-
-        {menu &&
-          Object.entries(menu).map(([itemName, itemDetails]) => (
-            <FoodEntry food={itemDetails} getMenu={getMenu} />
-          ))}
-        <button
-          onClick={() => {
-            addFoodToMenu(sampleFood);
-          }}
-        >
-          Add sample food
-        </button>
       </div>
     </BrowserRouter>
   );

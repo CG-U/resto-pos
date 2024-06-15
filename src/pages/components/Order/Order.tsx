@@ -1,62 +1,139 @@
-import { Category, Food } from "../../../App";
+import { useState, useMemo, useRef } from "react";
+import { Category, Food, categories } from "../../../App";
+import { CartDisplaySection, FoodEntry } from "../../../organism/components";
 
 export interface OrderProps {
   menu?: Food[];
+  getMenu: () => void;
 }
 
-export function Order({ menu }: OrderProps) {
-  const categories: Category[] = ["burgers", "desert", "drink", "sides"];
+export function Order({ menu, getMenu }: OrderProps) {
+  const [filterCategory, setFilterCategory] = useState<Category | null>(null);
+  const [cart, setCart] = useState<{ food: Food; quantity: number }[]>([]);
 
-  function categoryColorHelper(category: Category) {
-    let colors;
-    switch (category) {
-      case "drink":
-        colors = {
-          background: "bg-yellow-100",
-        };
-        break;
-      case "burgers":
-        colors = {
-          background: "bg-green-100",
-        };
-        break;
-      case "sides":
-        colors = {
-          background: "bg-blue-100",
-        };
-        break;
-      case "desert":
-        colors = {
-          background: "bg-pink-100",
-        };
-        break;
-    }
+  // Cart Total Purchase Calculator
+  const billDivRef = useRef<HTMLDivElement>(null);
 
-    return colors;
+  function addToCart(food: Food, quantity?: number) {
+    const cartIncludesTheFood = cart.some(
+      (cartItem) => cartItem.food.name === food.name
+    );
+
+    if (cartIncludesTheFood) {
+      const updatedCartItems = cart.map((cartItem) => {
+        if (cartItem.food.name === food.name)
+          return {
+            food: cartItem.food,
+            quantity: cartItem.quantity + (quantity || 0),
+          };
+        else return cartItem;
+      });
+
+      setCart(updatedCartItems);
+    } else
+      setCart((prev) => [...prev, { food: food, quantity: quantity || 1 }]);
+  }
+
+  function completeOrder() {
+    // Update stocks
+    // Post Receipt
+    // Open Modal, Order Completed
   }
 
   return (
-    <div className="w-full h-full px-2 py-4 bg-black">
-      <div className="h-full p-4 rounded-lg bg-base-100">
-        <nav className="flex items-center space-x-4">
-          <p>Categories:</p>
-          <ul className="flex flex-1 space-x-4">
+    <div className="w-full h-full overflow-y-scroll">
+      <div className="flex flex-col h-full p-4 space-y-4 rounded-lg bg-base-100">
+        <nav className="flex items-center justify-between space-x-4 md:justify-normal ">
+          <p className="text-lg font-bold">Categories:</p>
+          <ul className="flex-1 hidden space-x-4 md:flex">
             {categories.map((category) => {
               return (
                 <li
                   key={category}
                   className={`${
-                    categoryColorHelper(category).background
-                  } text-accent-content py-1 px-2 w-fit flex-1 text-center rounded-lg drop-shadow-lg`}
+                    categoryColorHelper(category).button
+                  } btn flex-1 text-base-300 `}
                   role="button"
+                  onClick={() => {
+                    setFilterCategory(category);
+                  }}
                 >
                   {category.toUpperCase()}
                 </li>
               );
             })}
+            {filterCategory !== null && (
+              <button className="btn" onClick={() => setFilterCategory(null)}>
+                Clear filter
+              </button>
+            )}
           </ul>
+          <span
+            className="ml-auto transition-all material-symbols-outlined md:hidden active:text-base "
+            role="button"
+          >
+            menu
+          </span>
         </nav>
+
+        <section className="flex flex-col h-full space-y-4 md:space-y-0 md:flex-row md:space-x-4 text-slate-800 overflow-clip">
+          {/* Menu Section */}
+          <div className="grid w-full h-full grid-cols-2 gap-2 p-2 overflow-y-scroll bg-white rounded-lg">
+            {menu?.map((foodItem) => {
+              if (filterCategory === null)
+                return (
+                  <FoodEntry
+                    food={foodItem}
+                    getMenu={getMenu}
+                    addToCart={addToCart}
+                  />
+                );
+
+              if (foodItem.category === filterCategory)
+                return (
+                  <FoodEntry
+                    food={foodItem}
+                    getMenu={getMenu}
+                    addToCart={addToCart}
+                  />
+                );
+            })}
+          </div>
+
+          {/* Cart / Computation */}
+          {cart.length > 0 && (
+            <CartDisplaySection cart={cart} billDivRef={billDivRef} />
+          )}
+        </section>
       </div>
     </div>
   );
+}
+
+export function categoryColorHelper(category: Category) {
+  let colors;
+  switch (category) {
+    case "drink":
+      colors = {
+        button: "btn-warning ",
+      };
+      break;
+    case "burgers":
+      colors = {
+        button: "btn-success",
+      };
+      break;
+    case "sides":
+      colors = {
+        button: "btn-info",
+      };
+      break;
+    case "desert":
+      colors = {
+        button: "btn-error",
+      };
+      break;
+  }
+
+  return colors;
 }
