@@ -5,10 +5,9 @@ import { Modal } from "../../../atom/components";
 
 export interface OrderProps {
   menu: Food[];
-  getMenu: () => void;
 }
 
-export function Order({ menu, getMenu }: OrderProps) {
+export function Order({ menu }: OrderProps) {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState<boolean>(false);
   const [filterCategory, setFilterCategory] = useState<Category | null>(null);
   const [cart, setCart] = useState<{ food: Food; quantity: number }[]>([]);

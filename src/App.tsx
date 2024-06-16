@@ -131,10 +131,7 @@ function App() {
                 element={<ManageStock menu={menu ? menu : []} />}
               />
             </Route>
-            <Route
-              path="/order"
-              element={<Order menu={menu ? menu : []} getMenu={getMenu} />}
-            />
+            <Route path="/order" element={<Order menu={menu ? menu : []} />} />
             <Route path="/sale-stats" element={<SaleStats />} />
           </Routes>
         </div>
