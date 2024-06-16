@@ -101,9 +101,9 @@ export function CartDisplaySection({
         </div>
       </Modal>
       <div className="h-full overflow-y-scroll" ref={billDivRef}>
-        {cart.map((cartContent) => {
+        {cart.map((cartContent, index: number) => {
           return (
-            <div className="flex justify-between space-x-2">
+            <div className="flex justify-between space-x-2" key={index}>
               <button
                 className="btn btn-xs btn-error"
                 onClick={() => removeFoodFromCart(cartContent.food.name)}
