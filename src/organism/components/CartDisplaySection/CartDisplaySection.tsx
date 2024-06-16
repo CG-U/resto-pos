@@ -1,5 +1,7 @@
-import { useMemo } from "react";
-import { Food } from "../../../App";
+import { useMemo, useState } from "react";
+import { Food, database } from "../../../App";
+import { getDatabase, set, push, ref, update } from "firebase/database";
+import { Modal } from "../../../atom/components";
 
 export interface CartDisplaySectionProps {
   billDivRef?: React.RefObject<HTMLDivElement>;
@@ -7,11 +9,15 @@ export interface CartDisplaySectionProps {
     food: Food;
     quantity: number;
   }[];
+  clearCart: () => void;
+  getMenu: () => void;
 }
 
 export function CartDisplaySection({
   billDivRef,
   cart,
+  clearCart,
+  getMenu,
 }: CartDisplaySectionProps) {
   const computeSubtotal = () => {
     let subtotal = 0;
@@ -28,8 +34,72 @@ export function CartDisplaySection({
     return subtotal;
   };
   const cartValue = useMemo(() => computeSubtotal(), [cart]);
+
+  function writeReceipt(
+    cart: { food: Food; quantity: number }[],
+    cartValue: number
+  ) {
+    const salesRef = ref(database, "sales");
+    push(salesRef, {
+      cartValue: cart,
+      total: cartValue,
+    })
+      .then((res) => {
+        reduceStocksAfterPurchase();
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+
+  function reduceStocksAfterPurchase() {
+    const updates: any = {};
+
+    cart.forEach(
+      (cartItem) =>
+        (updates["menu/" + cartItem.food.name] = {
+          ...cartItem.food,
+          stock: cartItem.food.stock - cartItem.quantity,
+        })
+    );
+    update(ref(database), updates)
+      .then(() => {
+        setOrderCompleteModalOpen(true);
+        // getMenu();
+      })
+      .catch((err) => console.log(err));
+  }
+
+  const [orderCompleteModalOpen, setOrderCompleteModalOpen] =
+    useState<boolean>(false);
+
+  function closeModal() {
+    setOrderCompleteModalOpen(false);
+    clearCart();
+  }
   return (
     <div className="flex flex-col justify-between w-full h-full p-2 bg-white rounded-lg md:w-1/3">
+      <Modal
+        className="flex w-4/5 h-3/5"
+        isOpen={orderCompleteModalOpen}
+        onRequestClose={() => {
+          closeModal();
+        }}
+      >
+        <div className="flex flex-col items-center h-full">
+          <h1 className="flex items-center flex-1 text-3xl font-bold">
+            Order Completed!
+          </h1>
+          <button
+            onClick={() => {
+              closeModal();
+            }}
+            className="font-bold btn btn-success"
+          >
+            Next order
+          </button>
+        </div>
+      </Modal>
       <div className="h-full overflow-y-scroll" ref={billDivRef}>
         {cart.map((cartContent) => {
           return (
@@ -49,7 +119,9 @@ export function CartDisplaySection({
         <p className="font-semibold">TOTAL:</p>
         <p className="font-bold">{cartValue}</p>
       </section>
-      <button className="btn">Complete Order</button>
+      <button className="btn" onClick={() => writeReceipt(cart, cartValue)}>
+        Complete Order
+      </button>
     </div>
   );
 }

@@ -7,7 +7,9 @@ export function AddToInventory() {
         <Link to="create-food" className="btn btn-outline btn-primary">
           Add Food To Menu
         </Link>
-        <button className="btn btn-outline btn-accent"> Manage Stock</button>
+        <Link to="manage-stock" className="btn btn-outline btn-accent">
+          Manage Stock
+        </Link>
       </div>
     </div>
   );

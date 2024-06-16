@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { Category, Food, categories } from "../../../App";
 import { CartDisplaySection, FoodEntry } from "../../../organism/components";
+import { Modal } from "../../../atom/components";
 
 export interface OrderProps {
   menu?: Food[];
@@ -8,6 +9,7 @@ export interface OrderProps {
 }
 
 export function Order({ menu, getMenu }: OrderProps) {
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState<boolean>(false);
   const [filterCategory, setFilterCategory] = useState<Category | null>(null);
   const [cart, setCart] = useState<{ food: Food; quantity: number }[]>([]);
 
@@ -34,10 +36,20 @@ export function Order({ menu, getMenu }: OrderProps) {
       setCart((prev) => [...prev, { food: food, quantity: quantity || 1 }]);
   }
 
-  function completeOrder() {
-    // Update stocks
-    // Post Receipt
-    // Open Modal, Order Completed
+  function clearCart() {
+    setCart([]);
+  }
+
+  function getMaxOrderForAnItem(foodName: string) {
+    const foodItemInCart = cart.find(
+      (cartItem) => cartItem.food.name === foodName
+    );
+    const foodItemInMenu = menu?.find((menuItem) => menuItem.name === foodName);
+    if (foodItemInCart && foodItemInMenu) {
+      return foodItemInMenu.stock - foodItemInCart.quantity;
+    }
+
+    return foodItemInMenu?.stock || 0;
   }
 
   return (
@@ -71,30 +83,58 @@ export function Order({ menu, getMenu }: OrderProps) {
           <span
             className="ml-auto transition-all material-symbols-outlined md:hidden active:text-base "
             role="button"
+            onClick={() => {
+              setIsFilterModalOpen(true);
+            }}
           >
             menu
           </span>
+          <Modal
+            isOpen={isFilterModalOpen}
+            onRequestClose={() => setIsFilterModalOpen(false)}
+          >
+            <ul className="flex-1 space-x-4">
+              {categories.map((category) => {
+                return (
+                  <li
+                    key={category}
+                    className={`${
+                      categoryColorHelper(category).button
+                    } btn flex-1 text-base-300 `}
+                    role="button"
+                    onClick={() => {
+                      setFilterCategory(category);
+                      setIsFilterModalOpen(false);
+                    }}
+                  >
+                    {category.toUpperCase()}
+                  </li>
+                );
+              })}
+              {filterCategory !== null && (
+                <button className="btn" onClick={() => setFilterCategory(null)}>
+                  Clear filter
+                </button>
+              )}
+            </ul>
+          </Modal>
         </nav>
 
         <section className="flex flex-col h-full space-y-4 md:space-y-0 md:flex-row md:space-x-4 text-slate-800 overflow-clip">
           {/* Menu Section */}
           <div className="grid w-full h-full grid-cols-2 gap-2 p-2 overflow-y-scroll bg-white rounded-lg">
             {menu?.map((foodItem) => {
-              if (filterCategory === null)
+              if (
+                filterCategory === null ||
+                foodItem.category === filterCategory
+              )
                 return (
                   <FoodEntry
                     food={foodItem}
                     getMenu={getMenu}
                     addToCart={addToCart}
-                  />
-                );
-
-              if (foodItem.category === filterCategory)
-                return (
-                  <FoodEntry
-                    food={foodItem}
-                    getMenu={getMenu}
-                    addToCart={addToCart}
+                    key={foodItem.name}
+                    max={getMaxOrderForAnItem(foodItem.name)}
                   />
                 );
             })}
@@ -102,7 +142,12 @@ export function Order({ menu, getMenu }: OrderProps) {
 
           {/* Cart / Computation */}
           {cart.length > 0 && (
-            <CartDisplaySection cart={cart} billDivRef={billDivRef} />
+            <CartDisplaySection
+              cart={cart}
+              billDivRef={billDivRef}
+              clearCart={clearCart}
+              getMenu={getMenu}
+            />
           )}
         </section>
       </div>

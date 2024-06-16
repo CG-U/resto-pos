@@ -1,17 +1,29 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { database, Food, categories, Category } from "../../../App";
 import { ref, set } from "firebase/database";
+import { useNavigate } from "react-router-dom";
 
 export interface CreateFoodProps {
-  getMenu: () => void;
+  menu: Food[];
 }
 
-export function CreateFood({ getMenu }: CreateFoodProps) {
+export function CreateFood({ menu }: CreateFoodProps) {
   const [foodName, setFoodname] = useState("");
   const [category, setCategory] = useState<Category>("burgers");
   const [price, setPrice] = useState<number>(0);
   const [stock, setStock] = useState(0);
 
+  const foodExistsInMenu = useMemo(
+    () =>
+      menu.some(
+        (menuItem) =>
+          menuItem.name.replaceAll(" ", "").toLowerCase() ===
+          foodName.replaceAll(" ", "").toLowerCase()
+      ),
+    [foodName]
+  );
+
+  const navigate = useNavigate();
   function addFoodToMenu(food: Food) {
     set(ref(database, "menu/" + food.name), {
       category: food.category,
@@ -19,8 +31,8 @@ export function CreateFood({ getMenu }: CreateFoodProps) {
       price: food.price,
       stock: food.stock,
     }).then(() => {
-      getMenu();
       clear();
+      navigate("/inventory");
     });
   }
 
@@ -97,8 +109,16 @@ export function CreateFood({ getMenu }: CreateFoodProps) {
           });
         }}
         className="ml-auto btn btn-primary"
+        disabled={
+          price <= 0 ||
+          stock < 1 ||
+          !price ||
+          !stock ||
+          !foodName ||
+          foodExistsInMenu
+        }
       >
-        Add sample food
+        {foodExistsInMenu ? "Already In The Menu" : "Add Sample Food"}
       </button>
     </div>
   );

@@ -1,15 +1,15 @@
 import "./App.css";
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get, child } from "firebase/database";
+import { getDatabase, ref, set, get, child, onValue } from "firebase/database";
 import { useState, useEffect } from "react";
+import { BrowserRouter, Route, Routes, Link, Navigate } from "react-router-dom";
 import {
-  BrowserRouter,
-  Route,
-  Routes,
-  Link,
-  useLocation,
-} from "react-router-dom";
-import { AddToInventory, CreateFood, Order } from "./pages/components";
+  AddToInventory,
+  CreateFood,
+  ManageStock,
+  Order,
+  SaleStats,
+} from "./pages/components";
 
 const firebaseConfig = {
   // ...
@@ -19,6 +19,10 @@ const firebaseConfig = {
 };
 
 export type Category = "drink" | "burgers" | "sides" | "desert";
+export type CartItem = {
+  cartValue: [{ food: Food; quantity: number }];
+  total: number;
+};
 export type Size = "" | "small" | "regular" | "large";
 export type Food = {
   category: Category;
@@ -42,23 +46,32 @@ function App() {
   }, []);
 
   function getMenu() {
-    const dbReference = ref(getDatabase());
-    get(child(dbReference, "menu"))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          const menuData = snapshot.val();
-          const menuArray = Object.keys(menuData).map((itemName) => ({
-            ...menuData[itemName],
-            name: itemName,
-          }));
-          setMenu(menuArray);
-        } else {
-          console.log("No data available");
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    const menuRef = ref(database, "menu");
+    onValue(menuRef, (snapshot) => {
+      const menuData = snapshot.val();
+      const menuArray = Object.keys(menuData).map((itemName) => ({
+        ...menuData[itemName],
+        name: itemName,
+      }));
+
+      setMenu(menuArray);
+    });
+    // get(child(ref(database), "menu"))
+    //   .then((snapshot) => {
+    //     if (snapshot.exists()) {
+    //       const menuData = snapshot.val();
+    //       const menuArray = Object.keys(menuData).map((itemName) => ({
+    //         ...menuData[itemName],
+    //         name: itemName,
+    //       }));
+    //       setMenu(menuArray);
+    //     } else {
+    //       console.log("No data available");
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //   });
   }
 
   return (
@@ -107,17 +120,23 @@ function App() {
         </nav>
         <div className="flex-1 h-full p-4 overflow-y-auto ">
           <Routes>
+            <Route path="/" element={<Navigate to="/order" />} />
             <Route path="/inventory">
               <Route path="" element={<AddToInventory />} />
               <Route
                 path="create-food"
-                element={<CreateFood getMenu={getMenu} />}
+                element={<CreateFood menu={menu ? menu : []} />}
+              />
+              <Route
+                path="manage-stock"
+                element={<ManageStock menu={menu ? menu : []} />}
               />
             </Route>
             <Route
               path="/order"
               element={<Order menu={menu} getMenu={getMenu} />}
             />
+            <Route path="/sale-stats" element={<SaleStats />} />
           </Routes>
         </div>
       </div>

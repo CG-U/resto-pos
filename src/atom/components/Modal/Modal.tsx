@@ -14,23 +14,29 @@ export function Modal({
   ...props
 }: ModalProps) {
   const defaultClassName =
-    "my-auto box-content bg-white p-5 outline-none rounded-md";
+    "my-auto box-content bg-base-200 border border-white p-5 outline-none rounded-lg";
 
   return (
     <ReactModal
       closeTimeoutMS={150}
       overlayClassName={overlayClassName}
-      className={defaultClassName + " " + className}
+      className={
+        "my-auto box-content bg-base-200 border border-white p-5 outline-none rounded-lg drop-shadow-lg flex flex-col" +
+        " " +
+        className
+      }
       bodyOpenClassName="overflow-hidden"
       {...props}
     >
-      <button
-        className="p-3 text-xl text-gray-500"
-        aria-label="Close Modal"
-        onClick={props.onRequestClose}
-      >
-        x
-      </button>
+      <div>
+        <button
+          className="p-3 text-xl text-gray-500"
+          aria-label="Close Modal"
+          onClick={props.onRequestClose}
+        >
+          x
+        </button>
+      </div>
 
       {props.children}
     </ReactModal>
