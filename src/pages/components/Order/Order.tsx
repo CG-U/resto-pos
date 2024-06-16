@@ -4,7 +4,7 @@ import { CartDisplaySection, FoodEntry } from "../../../organism/components";
 import { Modal } from "../../../atom/components";
 
 export interface OrderProps {
-  menu?: Food[];
+  menu: Food[];
   getMenu: () => void;
 }
 
@@ -32,8 +32,9 @@ export function Order({ menu, getMenu }: OrderProps) {
       });
 
       setCart(updatedCartItems);
-    } else
+    } else {
       setCart((prev) => [...prev, { food: food, quantity: quantity || 1 }]);
+    }
   }
 
   function clearCart() {

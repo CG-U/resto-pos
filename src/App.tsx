@@ -1,7 +1,7 @@
 import "./App.css";
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, get, child, onValue } from "firebase/database";
-import { useState, useEffect, useLayoutEffect } from "react";
+import { getDatabase, ref, onValue } from "firebase/database";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Route, Routes, Link, Navigate } from "react-router-dom";
 import {
   AddToInventory,
@@ -133,7 +133,7 @@ function App() {
             </Route>
             <Route
               path="/order"
-              element={<Order menu={menu} getMenu={getMenu} />}
+              element={<Order menu={menu ? menu : []} getMenu={getMenu} />}
             />
             <Route path="/sale-stats" element={<SaleStats />} />
           </Routes>

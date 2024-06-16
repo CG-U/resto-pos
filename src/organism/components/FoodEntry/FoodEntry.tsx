@@ -1,5 +1,4 @@
-import { Food, database } from "../../../App";
-import { ref, set } from "firebase/database";
+import { Food } from "../../../App";
 import { categoryColorHelper } from "../../../pages/components/Order";
 import { useState } from "react";
 

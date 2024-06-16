@@ -1,6 +1,6 @@
 import { onValue, ref } from "firebase/database";
 import { useEffect, useMemo, useState } from "react";
-import { CartItem, Food, database } from "../../../App";
+import { CartItem, database } from "../../../App";
 
 export interface SaleStatsProps {}
 

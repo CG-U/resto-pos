@@ -13,9 +13,6 @@ export function Modal({
 
   ...props
 }: ModalProps) {
-  const defaultClassName =
-    "my-auto box-content bg-base-200 border border-white p-5 outline-none rounded-lg";
-
   return (
     <ReactModal
       closeTimeoutMS={150}
