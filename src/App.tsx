@@ -1,7 +1,7 @@
 import "./App.css";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, set, get, child, onValue } from "firebase/database";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { BrowserRouter, Route, Routes, Link, Navigate } from "react-router-dom";
 import {
   AddToInventory,

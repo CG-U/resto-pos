@@ -137,7 +137,6 @@ export function Order({ menu, getMenu }: OrderProps) {
                 return (
                   <FoodEntry
                     food={foodItem}
-                    getMenu={getMenu}
                     addToCart={addToCart}
                     key={foodItem.name}
                     max={getMaxOrderForAnItem(foodItem.name)}

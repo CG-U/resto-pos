@@ -5,7 +5,6 @@ import { useState } from "react";
 
 export interface FoodEntryProps {
   food: Food;
-  getMenu: () => void;
   addToCart: (food: Food, quantity?: number) => void;
   max: number;
 }
@@ -14,12 +13,8 @@ export const foodCategoryColors = {
   burger: "bg-green-200",
 };
 
-export function FoodEntry({ food, getMenu, addToCart, max }: FoodEntryProps) {
+export function FoodEntry({ food, addToCart, max }: FoodEntryProps) {
   const [orderQuantity, setOrderQuantity] = useState<number>(1);
-
-  function clearSales() {
-    set(ref(database, "sales"), null);
-  }
 
   return (
     <div className="flex flex-col p-4 rounded-lg bg-base-100 text-base-content">
