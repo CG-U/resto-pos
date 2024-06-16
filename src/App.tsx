@@ -14,8 +14,7 @@ import {
 const firebaseConfig = {
   // ...
   // The value of `databaseURL` depends on the location of the database
-  databaseURL:
-    "https://resto-pos-c1516-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  databaseURL: process.env.REACT_APP_DATABASE_URI,
 };
 
 export type Category = "drink" | "burgers" | "sides" | "desert";
