@@ -1,8 +1,7 @@
 import { Food, database } from "../../../App";
 import { ref, set } from "firebase/database";
 import { categoryColorHelper } from "../../../pages/components/Order";
-import { useEffect, useState } from "react";
-import { Modal } from "../../../atom/components";
+import { useState } from "react";
 
 export interface FoodEntryProps {
   food: Food;
@@ -17,11 +16,6 @@ export const foodCategoryColors = {
 
 export function FoodEntry({ food, getMenu, addToCart, max }: FoodEntryProps) {
   const [orderQuantity, setOrderQuantity] = useState<number>(1);
-  function removeFood(name: string) {
-    set(ref(database, "menu/" + food.name), null).then(() => {
-      getMenu();
-    });
-  }
 
   function clearSales() {
     set(ref(database, "sales"), null);

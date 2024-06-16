@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Food, database } from "../../../App";
-import { getDatabase, set, push, ref, update } from "firebase/database";
+import { push, ref, update } from "firebase/database";
 import { Modal } from "../../../atom/components";
 
 export interface CartDisplaySectionProps {
@@ -9,15 +9,15 @@ export interface CartDisplaySectionProps {
     food: Food;
     quantity: number;
   }[];
+  removeFoodFromCart: (foodName: string) => void;
   clearCart: () => void;
-  getMenu: () => void;
 }
 
 export function CartDisplaySection({
   billDivRef,
   cart,
+  removeFoodFromCart,
   clearCart,
-  getMenu,
 }: CartDisplaySectionProps) {
   const computeSubtotal = () => {
     let subtotal = 0;
@@ -104,6 +104,12 @@ export function CartDisplaySection({
         {cart.map((cartContent) => {
           return (
             <div className="flex justify-between space-x-2">
+              <button
+                className="btn btn-xs btn-error"
+                onClick={() => removeFoodFromCart(cartContent.food.name)}
+              >
+                X
+              </button>
               <p className="flex-1 line-clamp-1 hover:line-clamp-none active:line-clamp-none">
                 {cartContent.food.name}
               </p>

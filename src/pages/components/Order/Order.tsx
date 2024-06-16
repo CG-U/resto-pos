@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useRef } from "react";
 import { Category, Food, categories } from "../../../App";
 import { CartDisplaySection, FoodEntry } from "../../../organism/components";
 import { Modal } from "../../../atom/components";
@@ -38,6 +38,12 @@ export function Order({ menu, getMenu }: OrderProps) {
 
   function clearCart() {
     setCart([]);
+  }
+
+  function removeFoodFromCart(foodName: string) {
+    setCart((prev) =>
+      prev.filter((cartItem) => cartItem.food.name !== foodName)
+    );
   }
 
   function getMaxOrderForAnItem(foodName: string) {
@@ -145,8 +151,8 @@ export function Order({ menu, getMenu }: OrderProps) {
             <CartDisplaySection
               cart={cart}
               billDivRef={billDivRef}
+              removeFoodFromCart={removeFoodFromCart}
               clearCart={clearCart}
-              getMenu={getMenu}
             />
           )}
         </section>
